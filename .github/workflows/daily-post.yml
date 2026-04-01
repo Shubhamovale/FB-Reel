@@ -1,0 +1,55 @@
+name: Daily Facebook Reels
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * *"
+
+jobs:
+  post-daily:
+    runs-on: ubuntu-latest
+    env:
+      FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+      FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+      DAILY_POST_COUNT: "3"
+      DELETE_AFTER_POST: "true"
+      POSTED_STATE_FILE: posted_state.json
+      SOURCE_DIR: runtime_videos
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install rclone
+        run: curl https://rclone.org/install.sh | sudo bash
+
+      - name: Configure rclone
+        shell: bash
+        run: |
+          mkdir -p ~/.config/rclone
+          cat <<'EOF' > ~/.config/rclone/rclone.conf
+          ${{ secrets.RCLONE_CONFIG }}
+          EOF
+
+      - name: Sync source videos from Google Drive
+        run: |
+          mkdir -p "$SOURCE_DIR"
+          rclone sync "${{ secrets.RCLONE_REMOTE_PATH }}" "$SOURCE_DIR"
+
+      - name: Dry run selection
+        run: python main.py publish-daily --source-dir "$SOURCE_DIR" --dry-run
+
+      - name: Publish daily batch
+        run: python main.py publish-daily --source-dir "$SOURCE_DIR" --count "$DAILY_POST_COUNT" --delete-after-post
+
+      - name: Sync deletions back to Google Drive
+        if: success()
+        run: rclone sync "$SOURCE_DIR" "${{ secrets.RCLONE_REMOTE_PATH }}" --delete-during
