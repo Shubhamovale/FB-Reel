@@ -3,7 +3,9 @@ name: Daily Facebook Reels
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 4 * * *"
+      - cron: '0 13 * * *'   # 8:00 AM EST / 6:30 PM IST
+      - cron: '0 16 * * *'   # 11:00 AM EST / 9:30 PM IST
+      - cron: '0 1 * * *'    # 8:00 PM EST / 6:30 AM IST next day
 
 jobs:
   post-daily:
