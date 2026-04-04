@@ -3,9 +3,8 @@ name: Daily Facebook Reels
 on:
   workflow_dispatch:
   schedule:
-      - cron: '0 13 * * *'   # 8:00 AM EST / 6:30 PM IST
-      - cron: '0 16 * * *'   # 11:00 AM EST / 9:30 PM IST
-      - cron: '0 1 * * *'    # 8:00 PM EST / 6:30 AM IST next day
+      - cron: '0 13 * * *'   # 6:30 PM IST
+      - cron: '0 16 * * *'   # 9:30 PM IST
 
 jobs:
   post-daily:
@@ -13,7 +12,7 @@ jobs:
     env:
       FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
       FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
-      DAILY_POST_COUNT: "3"
+      DAILY_POST_COUNT: "1"          # ← changed from 3 to 1
       DELETE_AFTER_POST: "true"
       POSTED_STATE_FILE: posted_state.json
       SOURCE_DIR: runtime_videos
